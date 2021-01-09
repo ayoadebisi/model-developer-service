@@ -19,17 +19,6 @@ def get_form_feature(league_info, form_option):
     return home_form - away_form
 
 
-def get_offense_differential(league_info, home):
-    if home:
-        home_off = find_elo_rating(league_info['country'], league_info['home_team'], 'offensive')
-        away_def = find_elo_rating(league_info['country'], league_info['away_team'], 'defensive')
-        return home_off - away_def
-    else:
-        away_off = find_elo_rating(league_info['country'], league_info['away_team'], 'offensive')
-        home_def = find_elo_rating(league_info['country'], league_info['home_team'], 'defensive')
-        return away_off - home_def
-
-
 def find_elo_rating(country, team, elo):
     for key in ELO_DATA[country][elo]:
         if ELO_DATA[country][elo][key]['team'].lower() == team.lower():
