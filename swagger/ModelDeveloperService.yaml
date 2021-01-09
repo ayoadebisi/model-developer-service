@@ -1,0 +1,124 @@
+swagger: "2.0"
+
+info:
+  title: "Model Developer Service"
+  version: "1.0"
+
+basePath: /v1
+
+paths:
+  /ModelDeveloperService/prediction:
+    post:
+      consumes: [application/json]
+      produces: [application/json]
+      summary: Gets prediction for given matchup
+      operationId: api.call_model_developer_service.class_instance.get_prediction
+      parameters:
+        - in: body
+          name: PredictionRequest
+          required: true
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/PredictionRequest'
+      responses:
+        '200':
+          description: 'Data containing prediction for given matchup'
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/PredictionResponse'
+  /ModelDeveloperService/ratings:
+    get:
+      produces: [application/json]
+      summary: Gets best rating of trained ANN models for countries
+      operationId: api.call_model_developer_service.class_instance.get_ratings
+      responses:
+        '200':
+          description: 'Ratings for classification and regression model for each country'
+          schema:
+            type: object
+            items:
+              $ref: '#/definitions/ANNRatingsResponse'
+
+definitions:
+  PredictionRequest:
+    type: object
+    properties:
+      league_info:
+        type: object
+        $ref: '#/definitions/LeagueInfo'
+      betting_info:
+        type: object
+        $ref: '#/definitions/BettingInfo'
+  LeagueInfo:
+    type: object
+    properties:
+      country:
+        type: string
+      home_team:
+        type: string
+      away_team:
+        type: string
+  BettingInfo:
+    type: object
+    properties:
+      home_win:
+        type: number
+      away_win:
+        type: number
+      tie:
+        type: number
+      over:
+        type: number
+      under:
+        type: number
+      handicap:
+        type: number
+  PredictionResponse:
+    type: object
+    properties:
+      forecast:
+        type: object
+        $ref: '#/definitions/Forecast'
+      score:
+        type: object
+        $ref: '#/definitions/Score'
+  Forecast:
+    type: object
+    properties:
+      home_win:
+        type: number
+      away_win:
+        type: number
+      tie:
+        type: number
+  Score:
+    type: object
+    properties:
+      home:
+        type: number
+      away:
+        type: number
+  ANNRatingsResponse:
+    type: object
+    properties:
+      classification:
+        type: object
+        $ref: '#/definitions/RatingsData'
+      regression:
+        type: object
+        $ref: '#/definitions/RatingsData'
+  RatingsData:
+    type: object
+    properties:
+      england:
+        type: number
+      france:
+        type: number
+      germany:
+        type: number
+      italy:
+        type: number
+      spain:
+        type: number

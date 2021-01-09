@@ -1,0 +1,157 @@
+{
+  "0": {
+    "elo": 1310,
+    "rating": 100,
+    "team": "Liverpool"
+  },
+  "1": {
+    "elo": 1250,
+    "rating": 95,
+    "team": "Manchester City"
+  },
+  "2": {
+    "elo": 1182,
+    "rating": 90,
+    "team": "Manchester United"
+  },
+  "3": {
+    "elo": 1132,
+    "rating": 86,
+    "team": "Tottenham"
+  },
+  "4": {
+    "elo": 1115,
+    "rating": 85,
+    "team": "Chelsea"
+  },
+  "5": {
+    "elo": 1095,
+    "rating": 83,
+    "team": "Leicester"
+  },
+  "6": {
+    "elo": 1093,
+    "rating": 83,
+    "team": "Everton"
+  },
+  "7": {
+    "elo": 1069,
+    "rating": 81,
+    "team": "Arsenal"
+  },
+  "8": {
+    "elo": 1070,
+    "rating": 81,
+    "team": "Wolverhampton Wanderers"
+  },
+  "9": {
+    "elo": 1059,
+    "rating": 80,
+    "team": "Southampton"
+  },
+  "10": {
+    "elo": 1020,
+    "rating": 77,
+    "team": "West Ham"
+  },
+  "11": {
+    "elo": 1019,
+    "rating": 77,
+    "team": "Burnley"
+  },
+  "12": {
+    "elo": 1020,
+    "rating": 77,
+    "team": "Leeds"
+  },
+  "13": {
+    "elo": 1007,
+    "rating": 76,
+    "team": "Newcastle United"
+  },
+  "14": {
+    "elo": 983,
+    "rating": 75,
+    "team": "Aston Villa"
+  },
+  "15": {
+    "elo": 986,
+    "rating": 75,
+    "team": "Crystal Palace"
+  },
+  "16": {
+    "elo": 948,
+    "rating": 72,
+    "team": "Watford"
+  },
+  "17": {
+    "elo": 954,
+    "rating": 72,
+    "team": "Brighton"
+  },
+  "18": {
+    "elo": 934,
+    "rating": 71,
+    "team": "Bournemouth"
+  },
+  "19": {
+    "elo": 936,
+    "rating": 71,
+    "team": "Cardiff"
+  },
+  "20": {
+    "elo": 925,
+    "rating": 70,
+    "team": "Swansea"
+  },
+  "21": {
+    "elo": 927,
+    "rating": 70,
+    "team": "Stoke"
+  },
+  "22": {
+    "elo": 917,
+    "rating": 70,
+    "team": "Sheffield United"
+  },
+  "23": {
+    "elo": 907,
+    "rating": 69,
+    "team": "Hull"
+  },
+  "24": {
+    "elo": 909,
+    "rating": 69,
+    "team": "West Bromwich Albion"
+  },
+  "25": {
+    "elo": 904,
+    "rating": 69,
+    "team": "Fulham"
+  },
+  "26": {
+    "elo": 893,
+    "rating": 68,
+    "team": "Middlesbrough"
+  },
+  "27": {
+    "elo": 878,
+    "rating": 67,
+    "team": "Queens Park Rangers"
+  },
+  "28": {
+    "elo": 856,
+    "rating": 65,
+    "team": "Sunderland"
+  },
+  "29": {
+    "elo": 845,
+    "rating": 64,
+    "team": "Norwich"
+  },
+  "30": {
+    "elo": 834,
+    "rating": 63,
+    "team": "Huddersfield"
+  }
+}

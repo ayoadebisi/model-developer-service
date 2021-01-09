@@ -1,0 +1,9 @@
+connexion
+pandas
+sklearn
+scikit-learn
+Keras
+tensorflow
+aiohttp
+Flask
+numpy
