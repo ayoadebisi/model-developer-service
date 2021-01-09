@@ -12,7 +12,7 @@ from training.model_utility import get_features, get_labels
 
 
 async def train_league_classification(data, country):
-    features = get_features(data, CLASSIFICATION_TRAINING_FEATURE_COLUMNS)
+    features = get_features(data, CLASSIFICATION_TRAINING_FEATURE_COLUMNS, True)
     labels = get_labels(data, ['outcome'])
     build_model(features, labels, country)
 

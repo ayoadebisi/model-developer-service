@@ -100,6 +100,10 @@ definitions:
         type: number
       away:
         type: number
+      predicted_home:
+        type: number
+      predicted_away:
+        type: number
   ANNRatingsResponse:
     type: object
     properties:
