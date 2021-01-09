@@ -11,6 +11,9 @@ DECAY_RATE = LEARNING_RATE / EPOCHS
 BATCH_SIZE = 128
 VERBOSE = 0
 
+CLASSIFICATION_INPUT_SHAPE = 13
+REGRESSION_INPUT_SHAPE = 9
+
 DATA_PROVIDER_URL = 'http://soccer-predictor-4.eba-kcmdarmk.us-east-2.elasticbeanstalk.com'
 DATA_PROVIDER_ENDPOINT = '/v1/ResultsProcessorService/'
 TRAINING_DATA_ENDPOINT = '/v1/ResultsProcessorService/training/'
