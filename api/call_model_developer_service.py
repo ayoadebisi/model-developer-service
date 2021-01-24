@@ -2,14 +2,14 @@ from flask import request
 
 from constants import BEST_RATED_MODELS, ACTIVE_MODELS
 from helper.model_request_helper import build_classification_request, build_regression_request, \
-    build_prediction_response
+    build_prediction_response, get_betting_info
 
 
 class ModelDeveloperService(object):
 
     def get_prediction(self):
         league_info = request.json['predictionRequest']['league_info']
-        betting_info = request.json['predictionRequest']['betting_info']
+        betting_info = get_betting_info(league_info)
 
         classification_model = ACTIVE_MODELS['classification'][league_info['country']]
         regression_model = ACTIVE_MODELS['regression'][league_info['country']]

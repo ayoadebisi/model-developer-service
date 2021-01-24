@@ -1,7 +1,15 @@
 from numpy import reshape, float64
 
-from constants import CLASSIFICATION_INPUT_SHAPE, REGRESSION_INPUT_SHAPE
+from constants import CLASSIFICATION_INPUT_SHAPE, REGRESSION_INPUT_SHAPE, TEAM_MAPPING, BETTING_ODDS, DEFAULT_ODDS
 from helper.feature_calculator import get_elo_feature, get_standings_feature, get_form_feature
+
+
+def get_betting_info(league_info):
+    home_team = TEAM_MAPPING.get(league_info['home_team'], league_info['home_team'])
+    away_team = TEAM_MAPPING.get(league_info['away_team'], league_info['away_team'])
+    query = home_team.lower().replace(' ', '-') + '-v-' + away_team.lower().replace(' ', '-')
+    betting_info = BETTING_ODDS[league_info['country'].lower()]['data'].get(query)
+    return DEFAULT_ODDS if betting_info is None else betting_info
 
 
 def build_classification_request(league_info, betting_info):
@@ -10,7 +18,7 @@ def build_classification_request(league_info, betting_info):
                               get_standings_feature(league_info, 'pos'), get_form_feature(league_info, 'form'),
                               get_form_feature(league_info, 'winning'), get_form_feature(league_info, 'unbeaten'),
                               get_form_feature(league_info, 'home'), get_form_feature(league_info, 'away'),
-                              betting_info['home_win'], betting_info['away_win'], betting_info['tie'],
+                              betting_info['home'], betting_info['away'], betting_info['draw'],
                               betting_info['handicap']]
 
     return reshape(classification_request, (CLASSIFICATION_INPUT_SHAPE, 1)).T

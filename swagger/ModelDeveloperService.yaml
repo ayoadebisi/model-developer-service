@@ -48,9 +48,6 @@ definitions:
       league_info:
         type: object
         $ref: '#/definitions/LeagueInfo'
-      betting_info:
-        type: object
-        $ref: '#/definitions/BettingInfo'
   LeagueInfo:
     type: object
     properties:
@@ -60,21 +57,6 @@ definitions:
         type: string
       away_team:
         type: string
-  BettingInfo:
-    type: object
-    properties:
-      home_win:
-        type: number
-      away_win:
-        type: number
-      tie:
-        type: number
-      over:
-        type: number
-      under:
-        type: number
-      handicap:
-        type: number
   PredictionResponse:
     type: object
     properties:

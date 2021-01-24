@@ -22,4 +22,4 @@ application = create_app()
 start_jobs()
 
 if __name__ == '__main__':
-    application.run()
+    application.run(port=8085)
