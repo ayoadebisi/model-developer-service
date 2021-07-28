@@ -1,9 +1,9 @@
 from pandas import DataFrame
-from keras.utils.np_utils import to_categorical
+from tensorflow.python.keras.utils.np_utils import to_categorical
 from sklearn.model_selection import train_test_split
-from keras import Sequential
-from keras.layers import Dense, Dropout
-from keras.optimizers import adam
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense, Dropout
+from tensorflow.keras.optimizers import Adam
 
 
 from constants import CLASSIFICATION_TRAINING_FEATURE_COLUMNS, SEED, TEST_SIZE, SHUFFLE, BATCH_SIZE, EPOCHS, VERBOSE, \
@@ -11,7 +11,7 @@ from constants import CLASSIFICATION_TRAINING_FEATURE_COLUMNS, SEED, TEST_SIZE, 
 from training.model_utility import get_features, get_labels
 
 
-async def train_league_classification(data, country):
+def train_league_classification(data, country):
     features = get_features(data, CLASSIFICATION_TRAINING_FEATURE_COLUMNS, True)
     labels = get_labels(data, ['outcome'])
     build_model(features, labels, country)
@@ -33,7 +33,7 @@ def build_model(features, labels, country):
     model.add(Dropout(0.5))
     model.add(Dense(units=3, activation='softmax'))
 
-    optimizer = adam(lr=LEARNING_RATE, decay=DECAY_RATE)
+    optimizer = Adam(lr=LEARNING_RATE, decay=DECAY_RATE)
 
     model.compile(loss='categorical_crossentropy',
                   optimizer=optimizer,
@@ -57,8 +57,8 @@ def process_features(features):
         'form': features['h_form'] - features['a_form'],
         'winning_streak': features['h_winning'] - features['a_winning'],
         'unbeaten_streak': features['h_unbeaten'] - features['a_unbeaten'],
-        'home_form': features['h_home'] - features['a_away'],
-        'away_form': features['h_away'] - features['a_home'],
+        'home_form': features['h_home'] - features['h_home'],
+        'away_form': features['a_away'] - features['a_away'],
         'home_odds': features['home_odds'],
         'away_odds': features['away_odds'],
         'draw_odds': features['draw_odds'],
@@ -71,6 +71,5 @@ def process_features(features):
 def update_best_model(model, accuracy, country):
     if accuracy > BEST_RATED_MODELS['classification'][country.lower()]:
         print('Better classification model has been trained for ' + country.capitalize() + ' and is being uploaded.')
-        model._make_predict_function()
         BEST_RATED_MODELS['classification'][country.lower()] = accuracy
         ACTIVE_MODELS['classification'][country.lower()] = model

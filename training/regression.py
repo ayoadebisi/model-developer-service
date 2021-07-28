@@ -1,8 +1,8 @@
 from pandas import DataFrame
 from sklearn.model_selection import train_test_split
-from keras import Sequential
-from keras.layers import Dense
-from keras.optimizers import adam
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.optimizers import Adam
 
 
 from constants import REGRESSION_TRAINING_FEATURE_COLUMNS, BEST_RATED_MODELS, TEST_SIZE, SHUFFLE, SEED, \
@@ -10,7 +10,7 @@ from constants import REGRESSION_TRAINING_FEATURE_COLUMNS, BEST_RATED_MODELS, TE
 from training.model_utility import get_features, get_labels
 
 
-async def train_league_regression(data, country):
+def train_league_regression(data, country):
     features = get_features(data, REGRESSION_TRAINING_FEATURE_COLUMNS, False)
     classification_features = get_features(data, CLASSIFICATION_TRAINING_FEATURE_COLUMNS, True)
     labels = get_labels(data, ['home_goal', 'away_goal'])
@@ -29,7 +29,7 @@ def build_model(features, classification_features, labels, country):
     model.add(Dense(units=10, activation='relu'))
     model.add(Dense(units=2, activation='relu'))
 
-    optimizer = adam(lr=LEARNING_RATE, decay=DECAY_RATE)
+    optimizer = Adam(lr=LEARNING_RATE, decay=DECAY_RATE)
 
     model.compile(loss='mean_squared_error',
                   optimizer=optimizer,
@@ -86,6 +86,5 @@ def get_classification_data(classification_features, country):
 def update_best_model(model, accuracy, country):
     if accuracy > BEST_RATED_MODELS['regression'][country.lower()]:
         print('Better regression model has been trained for ' + country.capitalize() + ' and is being uploaded.')
-        model._make_predict_function()
         BEST_RATED_MODELS['regression'][country.lower()] = accuracy
         ACTIVE_MODELS['regression'][country.lower()] = model

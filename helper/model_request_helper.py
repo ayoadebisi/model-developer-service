@@ -1,35 +1,40 @@
 from numpy import reshape, float64
 
-from constants import CLASSIFICATION_INPUT_SHAPE, REGRESSION_INPUT_SHAPE, TEAM_MAPPING, BETTING_ODDS, DEFAULT_ODDS
-from helper.feature_calculator import get_elo_feature, get_standings_feature, get_form_feature
+from constants import CLASSIFICATION_INPUT_SHAPE, REGRESSION_INPUT_SHAPE
 
 
-def get_betting_info(league_info):
-    home_team = TEAM_MAPPING.get(league_info['home_team'], league_info['home_team'])
-    away_team = TEAM_MAPPING.get(league_info['away_team'], league_info['away_team'])
-    query = home_team.lower().replace(' ', '-') + '-v-' + away_team.lower().replace(' ', '-')
-    betting_info = BETTING_ODDS[league_info['country'].lower()]['data'].get(query)
-    return DEFAULT_ODDS if betting_info is None else betting_info
-
-
-def build_classification_request(league_info, betting_info):
-    classification_request = [get_elo_feature(league_info, 'offensive'), get_elo_feature(league_info, 'defensive'),
-                              get_elo_feature(league_info, 'performance'),
-                              get_standings_feature(league_info, 'pos'), get_form_feature(league_info, 'form'),
-                              get_form_feature(league_info, 'winning'), get_form_feature(league_info, 'unbeaten'),
-                              get_form_feature(league_info, 'home'), get_form_feature(league_info, 'away'),
-                              betting_info['home'], betting_info['away'], betting_info['draw'],
-                              betting_info['handicap']]
+def build_classification_request(request_data):
+    classification_request = [request_data['OffensiveElo'], request_data['DefensiveElo'],
+                              request_data['PerformanceElo'], request_data['Position'], request_data['Form'],
+                              request_data['WinningStreak'], request_data['UnbeatenStreak'], request_data['HomeForm'],
+                              request_data['AwayForm'], request_data['HomeWin'], request_data['AwayWin'],
+                              request_data['Draw'], request_data['AsianHandicap']]
 
     return reshape(classification_request, (CLASSIFICATION_INPUT_SHAPE, 1)).T
 
 
-def build_regression_request(league_info, betting_info, probabilities):
-    regression_request = [get_standings_feature(league_info, 'gd'), get_form_feature(league_info, 'scoring'),
-                          get_form_feature(league_info, 'clean_sheet'), betting_info['over'],
-                          betting_info['under'], probabilities[0][1], probabilities[0][2], probabilities[0][0]]
+def build_regression_request(request_data, probabilities):
+    regression_request = [request_data['GoalDifference'], request_data['ScoringStreak'], request_data['CleanSheet'],
+                          request_data['Over'], request_data['Under'], probabilities[0][1], probabilities[0][2],
+                          probabilities[0][0]]
 
     return reshape(regression_request, (REGRESSION_INPUT_SHAPE, 1)).T
+
+
+def build_default_response():
+    return {
+        'forecast': {
+            'home_win': 0.33,
+            'away_win': 0.33,
+            'tie': 0.34
+        },
+        'score': {
+            'home': 0,
+            'expected_home': 0.0,
+            'away': 0,
+            'expected_away': 0.0
+        }
+    }
 
 
 def build_prediction_response(probabilities, goals):
