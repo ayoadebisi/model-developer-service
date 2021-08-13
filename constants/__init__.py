@@ -1,20 +1,21 @@
-STAGE = 'DEVO'
+import os
 
-SEED = 78
-TEST_SIZE = 0.2
-SHUFFLE = False
-EPOCHS = 50
-LEARNING_RATE = 0.001
+STAGE = os.environ['STAGE']
+
+SEED = int(os.environ['SEED'])
+TEST_SIZE = float(os.environ['TEST_SIZE'])
+SHUFFLE = os.environ['SHUFFLE']
+EPOCHS = int(os.environ['EPOCHS'])
+LEARNING_RATE = float(os.environ['LEARNING_RATE'])
 DECAY_RATE = LEARNING_RATE / EPOCHS
-BATCH_SIZE = 128
-VERBOSE = 0
+BATCH_SIZE = int(os.environ['BATCH_SIZE'])
+VERBOSE = int(os.environ['VERBOSE'])
 
-CLASSIFICATION_INPUT_SHAPE = 13
-REGRESSION_INPUT_SHAPE = 8
+CLASSIFICATION_INPUT_SHAPE = int(os.environ['CLASSIFICATION_INPUT_SHAPE'])
+REGRESSION_INPUT_SHAPE = int(os.environ['REGRESSION_INPUT_SHAPE'])
 
-DATA_PROVIDER_URL = 'https://y95xe287sc.execute-api.us-east-1.amazonaws.com/Prod/provider/'
-TRAINING_DATA_PROVIDER_URL = 'arn:aws:lambda:us-east-1:366364139691:function:Football-Data-Aggregator-' \
-                             'DataAggregatorLambda-JMAYFOUQRQR4'
+DATA_PROVIDER_URL = os.environ['DATA_PROVIDER_URL']
+TRAINING_DATA_PROVIDER_URL = os.environ['TRAINING_DATA_PROVIDER_URL']
 
 COUNTRIES = ['england', 'spain', 'france', 'italy', 'germany']
 

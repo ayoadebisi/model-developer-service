@@ -1,4 +1,5 @@
 import datetime
+import os
 import threading
 import boto3
 
@@ -12,8 +13,8 @@ def get():
     print('Renewing Lambda Client Credentials ', datetime.datetime.now())
     LAMBDA_CLIENT = boto3.client(
         'lambda',
-        aws_access_key_id='AKIAVKTIBECVTEF6ZR5P',
-        aws_secret_access_key='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',
+        aws_access_key_id=os.environ['ACCESS_KEY'],
+        aws_secret_access_key=os.environ['SECRET_KEY'],
         config=Config(
             read_timeout=900,
             connect_timeout=900,

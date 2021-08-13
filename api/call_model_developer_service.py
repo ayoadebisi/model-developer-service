@@ -14,12 +14,16 @@ class ModelDeveloperService(object):
         try:
             league_info = request.json['predictionRequest']['league_info']
 
+            print(f'Handling Request={league_info}')
+
             data = {
                 'home_team': league_info['home_team'],
                 'away_team': league_info['away_team']
             }
 
             prediction_data = json.loads(requests.post(url=DATA_PROVIDER_URL, data=json.dumps(data)).text)
+
+            print(f'Prediction Data={prediction_data}')
 
             if not bool(prediction_data):
                 print('Prediction data is empty, returning default response.')
@@ -33,9 +37,11 @@ class ModelDeveloperService(object):
                     'message': 'Internal Error: Prediction model isn\'t ready. Try again later'
                 }, 500
 
+            print('Sending classification inference request...')
             classification_request = build_classification_request(prediction_data)
             probabilities = classification_model.predict(classification_request)
 
+            print('Sending regression inference request...')
             regression_request = build_regression_request(prediction_data, probabilities)
             goals = regression_model.predict(regression_request)
 
