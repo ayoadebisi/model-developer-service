@@ -4,8 +4,8 @@ import json
 from flask import request
 
 from constants import BEST_RATED_MODELS, ACTIVE_MODELS, DATA_PROVIDER_URL
-from helper.model_request_helper import build_classification_request, build_regression_request, \
-    build_prediction_response, build_default_response
+from helper.model_request_helper import build_classification_request, build_prediction_response, \
+    build_default_response, build_regression_request
 
 
 class ModelDeveloperService(object):
@@ -29,8 +29,8 @@ class ModelDeveloperService(object):
                 print('Prediction data is empty, returning default response.')
                 return build_default_response()
 
-            classification_model = ACTIVE_MODELS['classification'][league_info['country']]
-            regression_model = ACTIVE_MODELS['regression'][league_info['country']]
+            classification_model = ACTIVE_MODELS['classification']
+            regression_model = ACTIVE_MODELS['regression']
 
             if not (classification_model or regression_model):
                 return {
@@ -45,7 +45,7 @@ class ModelDeveloperService(object):
             regression_request = build_regression_request(prediction_data, probabilities)
             goals = regression_model.predict(regression_request)
 
-            return build_prediction_response(probabilities, goals)
+            return build_prediction_response(probabilities, goals[0][0], goals[0][1])
         except Exception as e:
             print(f'Exception occurred whilst getting model prediction. {e}')
             return {
