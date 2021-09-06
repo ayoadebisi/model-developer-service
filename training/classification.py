@@ -57,6 +57,14 @@ def select_features(dataframe):
         'winning': dataframe['h_winning'] - dataframe['a_winning'],
         'unbeaten': dataframe['h_unbeaten'] - dataframe['a_unbeaten'],
         'clean_sheet': dataframe['h_clean_sheet'] - dataframe['a_clean_sheet'],
+        'head_to_head_cs': dataframe['head_to_head_clean_sheet_1'] - dataframe['head_to_head_clean_sheet_2'],
+        'head_to_head_form': dataframe['head_to_head_form_1'] - dataframe['head_to_head_form_2'],
+        'head_to_head_goal': dataframe['head_to_head_goal_1'] - dataframe['head_to_head_goal_2'],
+        'head_to_head_goal_avg': dataframe['head_to_head_goal_avg_1'] - dataframe['head_to_head_goal_avg_2'],
+        'head_to_head_scoring': dataframe['head_to_head_scoring_1'] - dataframe['head_to_head_scoring_2'],
+        'head_to_head_unbeaten': dataframe['head_to_head_unbeaten_1'] - dataframe['head_to_head_unbeaten_2'],
+        'head_to_head_winning': dataframe['head_to_head_winning_1'] - dataframe['head_to_head_winning_2'],
+        'head_to_head_wins': dataframe['head_to_head_wins_1'] - dataframe['head_to_head_wins_2'],
         'away': dataframe['a_away']
     }
 

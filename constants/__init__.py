@@ -18,7 +18,13 @@ TRAINING_DATA_COLUMNS = ['home_team', 'away_team', 'home_goal', 'away_goal', 'ou
                          'h_pef_elo', 'a_off_elo', 'a_def_elo', 'a_pef_elo', 'home_pos', 'home_gd', 'home_pts',
                          'away_pos', 'away_gd', 'away_pts', 'h_form', 'h_winning', 'h_unbeaten', 'h_home', 'h_away',
                          'h_clean_sheet', 'h_scoring', 'a_form', 'a_winning', 'a_unbeaten', 'a_home', 'a_away',
-                         'a_clean_sheet', 'a_scoring', 'home_odds', 'draw_odds', 'away_odds', 'over', 'under',
+                         'a_clean_sheet', 'a_scoring', 'head_to_head_clean_sheet_1', 'head_to_head_form_1',
+                         'head_to_head_goal_1', 'head_to_head_goal_avg_1', 'head_to_head_scoring_1',
+                         'head_to_head_unbeaten_1', 'head_to_head_winning_1', 'head_to_head_wins_1',
+                         'head_to_head_clean_sheet_2', 'head_to_head_form_2',
+                         'head_to_head_goal_2', 'head_to_head_goal_avg_2', 'head_to_head_scoring_2',
+                         'head_to_head_unbeaten_2', 'head_to_head_winning_2', 'head_to_head_wins_2',
+                         'home_odds', 'draw_odds', 'away_odds', 'over', 'under',
                          'handicap']
 
 BEST_RATED_MODELS = {

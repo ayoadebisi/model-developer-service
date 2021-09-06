@@ -30,7 +30,6 @@ def obtain_training_data():
             frames.append(DataFrame(training_data[i]['training_data'], columns=TRAINING_DATA_COLUMNS))
 
         training_df = pd.concat(frames)
-        training_df.iloc[:, 2:] = training_df.iloc[:, 2:].apply(pd.to_numeric)
 
         train_league_classification(training_df)
         train_league_regression(training_df)

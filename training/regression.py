@@ -16,7 +16,10 @@ NUM_TEAMS = {'Length': 0}
 def train_league_regression(data):
     classification_features = classification.select_features(data)
     labels = data[['home_goal', 'away_goal']]
-    build_model(data, classification_features, labels)
+    results = build_model(data, classification_features, labels)
+    if validate_results(results):
+        print('Results contains all zeros for home or away, rebuilding regression model.')
+        train_league_regression(data)
 
 
 def build_model(features, classification_features, labels):
@@ -49,6 +52,8 @@ def build_model(features, classification_features, labels):
 
     print('Regression model results for were:', results)
 
+    return model.predict(x_test)
+
 
 def process_features(features, classification_features):
     global NUM_TEAMS
@@ -59,6 +64,10 @@ def process_features(features, classification_features):
         'away_win': classification_features[:, 2],
         'tie': classification_features[:, 0],
         'away_clean_sheet': features['a_clean_sheet'],
+        'head_to_head_goal_avg': features['head_to_head_goal_avg_1'] - features['head_to_head_goal_avg_2'],
+        'head_to_head_unbeaten': features['head_to_head_unbeaten_1'] - features['head_to_head_unbeaten_2'],
+        'head_to_head_winning': features['head_to_head_winning_1'] - features['head_to_head_winning_2'],
+        'head_to_head_wins': features['head_to_head_wins_1'] - features['head_to_head_wins_2'],
         'home_team': [hash_team_name(team, NUM_TEAMS['Length']) for team in features['home_team']],
         'away_team': [hash_team_name(team, NUM_TEAMS['Length']) for team in features['away_team']]
     }
@@ -79,3 +88,16 @@ def update_best_model(model, accuracy):
         print('Better regression model has been trained for and is being uploaded.')
         BEST_RATED_MODELS['regression'] = accuracy
         ACTIVE_MODELS['regression'] = model
+
+
+def validate_results(results):
+    home_win = 0
+
+    for row in results:
+        count = 1 if (row[0] > row[1]) else 0
+        home_win = home_win + count
+
+    if (results[:, 0] == 0).all() or (results[:, 1] == 0).all():
+        return True
+
+    return (home_win / len(results)) > 0.7

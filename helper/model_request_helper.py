@@ -9,6 +9,10 @@ from training.regression import NUM_TEAMS, hash_team_name
 def build_classification_request(request_data):
     classification_request = [request_data['PerformanceElo'], request_data['Position'], request_data['Form'],
                               request_data['WinningStreak'], request_data['UnbeatenStreak'], request_data['CleanSheet'],
+                              request_data['HeadToHeadCS'], request_data['HeadToHeadForm'],
+                              request_data['HeadToHeadGoal'], request_data['HeadToHeadGoalAvg'],
+                              request_data['HeadToHeadScoring'], request_data['HeadToHeadUnbeaten'],
+                              request_data['HeadToHeadWinning'], request_data['HeadToHeadWins'],
                               request_data['AwayForm']]
 
     return reshape(classification_request, (len(classification_request), 1)).T
@@ -18,6 +22,8 @@ def build_regression_request(request_data, probabilities):
     home_team = hash_team_name(request_data['HomeTeam'].replace(" ", ""), NUM_TEAMS['Length'])
     away_team = hash_team_name(request_data['AwayTeam'].replace(" ", ""), NUM_TEAMS['Length'])
     regression_request = [probabilities[0][1], probabilities[0][2], probabilities[0][0], request_data['AwayCleanSheet'],
+                          request_data['HeadToHeadGoalAvg'], request_data['HeadToHeadUnbeaten'],
+                          request_data['HeadToHeadWinning'], request_data['HeadToHeadWins'],
                           home_team, away_team]
 
     return reshape(regression_request, (len(regression_request), 1)).T
