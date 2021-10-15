@@ -1,16 +1,13 @@
 from pandas import DataFrame
 from sklearn.model_selection import train_test_split
 from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Dense
+from tensorflow.keras.layers import Dense, Dropout
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.preprocessing.text import hashing_trick
 
 
 from constants import BEST_RATED_MODELS, TEST_SIZE, SHUFFLE, SEED, LEARNING_RATE, DECAY_RATE, \
     EPOCHS, BATCH_SIZE, VERBOSE, ACTIVE_MODELS
 from training import classification
-
-NUM_TEAMS = {'Length': 0}
 
 
 def train_league_regression(data):
@@ -26,17 +23,19 @@ def build_model(features, classification_features, labels):
     classification_outputs = get_classification_data(classification_features)
     input_data = process_features(features, classification_outputs)
 
-    x_train, x_test, y_train, y_test = train_test_split(input_data, labels, test_size=TEST_SIZE,
-                                                        shuffle=SHUFFLE, random_state=SEED)
-
-    x_train, x_val, y_train, y_val = train_test_split(input_data, labels, test_size=TEST_SIZE,
+    x_train, x_rem, y_train, y_rem = train_test_split(input_data, labels, test_size=TEST_SIZE,
                                                       shuffle=SHUFFLE, random_state=SEED)
+
+    x_val, x_test, y_val, y_test = train_test_split(x_rem, y_rem, test_size=0.5,
+                                                    shuffle=SHUFFLE, random_state=SEED)
 
     model = Sequential()
 
-    model.add(Dense(units=x_train.shape[1], activation='relu', input_dim=x_train.shape[1]))
-    model.add(Dense(units=10, activation='relu'))
-    model.add(Dense(units=2, activation='relu'))
+    model.add(Dense(units=x_train.shape[1], activation='softplus', input_dim=x_train.shape[1]))
+    model.add(Dropout(0.5))
+    model.add(Dense(units=75, activation='softplus'))
+    model.add(Dropout(0.5))
+    model.add(Dense(units=2, activation='softplus'))
 
     optimizer = Adam(lr=LEARNING_RATE, decay=DECAY_RATE)
 
@@ -56,27 +55,17 @@ def build_model(features, classification_features, labels):
 
 
 def process_features(features, classification_features):
-    global NUM_TEAMS
-    NUM_TEAMS['Length'] = len(set(features['home_team']))
-
     input_data = {
         'home_win': classification_features[:, 1],
         'away_win': classification_features[:, 2],
         'tie': classification_features[:, 0],
-        'away_clean_sheet': features['a_clean_sheet'],
-        'head_to_head_goal_avg': features['head_to_head_goal_avg_1'] - features['head_to_head_goal_avg_2'],
-        'head_to_head_unbeaten': features['head_to_head_unbeaten_1'] - features['head_to_head_unbeaten_2'],
-        'head_to_head_winning': features['head_to_head_winning_1'] - features['head_to_head_winning_2'],
-        'head_to_head_wins': features['head_to_head_wins_1'] - features['head_to_head_wins_2'],
-        'home_team': [hash_team_name(team, NUM_TEAMS['Length']) for team in features['home_team']],
-        'away_team': [hash_team_name(team, NUM_TEAMS['Length']) for team in features['away_team']]
+        'head_to_head_goal': features['head_to_head_goal'],
+        'head_to_head_goal_avg': features['head_to_head_goal_avg'],
+        'head_to_head_cs': features['head_to_head_cs'],
+        'clean_sheet': features['clean_sheet']
     }
 
     return DataFrame(input_data)
-
-
-def hash_team_name(team, length):
-    return hashing_trick(team, round(length * 1.3), hash_function='md5')[0]
 
 
 def get_classification_data(classification_features):
@@ -99,5 +88,8 @@ def validate_results(results):
 
     if (results[:, 0] == 0).all() or (results[:, 1] == 0).all():
         return True
+
+    print(f'Home win ratio for this batch of results {(home_win / len(results))}')
+    print(f'Score min {results.min()} and max {results.max()}')
 
     return (home_win / len(results)) > 0.7

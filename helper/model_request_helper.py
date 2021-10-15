@@ -3,28 +3,34 @@ import numpy as np
 from pandas import DataFrame
 from numpy import reshape, float64
 
-from training.regression import NUM_TEAMS, hash_team_name
+from helper import DATA_MEAN, DATA_STD
+from constants import NORMALIZATION_KEYS
+
+
+def normalize_data(data, key):
+    return (data - DATA_MEAN['data'][NORMALIZATION_KEYS[key]]) / DATA_STD['data'][NORMALIZATION_KEYS[key]]
 
 
 def build_classification_request(request_data):
-    classification_request = [request_data['PerformanceElo'], request_data['Position'], request_data['Form'],
-                              request_data['WinningStreak'], request_data['UnbeatenStreak'], request_data['CleanSheet'],
-                              request_data['HeadToHeadCS'], request_data['HeadToHeadForm'],
-                              request_data['HeadToHeadGoal'], request_data['HeadToHeadGoalAvg'],
-                              request_data['HeadToHeadScoring'], request_data['HeadToHeadUnbeaten'],
-                              request_data['HeadToHeadWinning'], request_data['HeadToHeadWins'],
-                              request_data['AwayForm']]
+    classification_request = [normalize_data(request_data['Position'], 'Position'),
+                              normalize_data(request_data['PerformanceElo'], 'PerformanceElo'),
+                              normalize_data(request_data['HeadToHeadForm'], 'HeadToHeadForm'),
+                              normalize_data(request_data['UnbeatenStreak'], 'UnbeatenStreak'),
+                              normalize_data(request_data['Form'], 'Form'),
+                              normalize_data(request_data['WinningStreak'], 'WinningStreak'),
+                              normalize_data(request_data['HeadToHeadUnbeaten'], 'HeadToHeadUnbeaten'),
+                              normalize_data(request_data['HeadToHeadWinning'], 'HeadToHeadWinning'),
+                              normalize_data(request_data['HeadToHeadWins'], 'HeadToHeadWins')]
 
     return reshape(classification_request, (len(classification_request), 1)).T
 
 
 def build_regression_request(request_data, probabilities):
-    home_team = hash_team_name(request_data['HomeTeam'].replace(" ", ""), NUM_TEAMS['Length'])
-    away_team = hash_team_name(request_data['AwayTeam'].replace(" ", ""), NUM_TEAMS['Length'])
-    regression_request = [probabilities[0][1], probabilities[0][2], probabilities[0][0], request_data['AwayCleanSheet'],
-                          request_data['HeadToHeadGoalAvg'], request_data['HeadToHeadUnbeaten'],
-                          request_data['HeadToHeadWinning'], request_data['HeadToHeadWins'],
-                          home_team, away_team]
+    regression_request = [probabilities[0][1], probabilities[0][2], probabilities[0][0],
+                          normalize_data(request_data['HeadToHeadGoal'], 'HeadToHeadGoal'),
+                          normalize_data(request_data['HeadToHeadGoalAvg'], 'HeadToHeadGoalAvg'),
+                          normalize_data(request_data['HeadToHeadCS'], 'HeadToHeadCS'),
+                          normalize_data(request_data['CleanSheet'], 'CleanSheet')]
 
     return reshape(regression_request, (len(regression_request), 1)).T
 

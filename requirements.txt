@@ -52,3 +52,4 @@ pandas~=1.2.4
 connexion~=2.9.0
 scikit-learn~=0.24.2
 statsmodels==0.12.2
+matplotlib==3.4.3
