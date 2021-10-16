@@ -4,8 +4,8 @@ import pandas as pd
 from pandas import DataFrame
 from matplotlib import pyplot
 
-from constants import TRAINING_DATA_PROVIDER_URL, TRAINING_DATA_COLUMNS, STAGE
-from data.lambda_client_builder import LAMBDA_CLIENT
+from constants import TRAINING_DATA_COLUMNS, STAGE
+from data.s3_client_builder import S3_CLIENT
 from training.classification import train_league_classification
 from training.regression import train_league_regression
 
@@ -15,15 +15,12 @@ DATA_STD = {'data': pd.Series}
 
 def obtain_training_data():
     try:
-        training_data = []
-
         if STAGE != 'DEVO':
-            lambda_response = LAMBDA_CLIENT.invoke(
-                FunctionName=TRAINING_DATA_PROVIDER_URL,
-                InvocationType='RequestResponse'
-            )['Payload'].read()
-            lambda_response = json.loads(lambda_response)
-            training_data = json.loads(lambda_response['body'])
+            s3_response = S3_CLIENT['client'].get_object(
+                Bucket='training-data-football-prediction',
+                Key='training-data'
+            )['Body'].read()
+            training_data = json.loads(s3_response)
         else:
             f = open('constants/europe_training_data.json')
             training_data = json.load(f)

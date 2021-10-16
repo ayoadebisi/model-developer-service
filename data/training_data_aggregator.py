@@ -8,4 +8,4 @@ def get():
     print('Retrieving training data from processor service', datetime.datetime.now())
     obtain_training_data()
     print('Retrieved training data from processor service', datetime.datetime.now())
-    threading.Timer(2592000, get).start()
+    threading.Timer(604800, get).start()

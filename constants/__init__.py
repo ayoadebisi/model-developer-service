@@ -12,7 +12,6 @@ BATCH_SIZE = int(os.environ['BATCH_SIZE'])
 VERBOSE = int(os.environ['VERBOSE'])
 
 DATA_PROVIDER_URL = os.environ['DATA_PROVIDER_URL']
-TRAINING_DATA_PROVIDER_URL = os.environ['TRAINING_DATA_PROVIDER_URL']
 
 TRAINING_DATA_COLUMNS = ['home_team', 'away_team', 'home_goal', 'away_goal', 'outcome', 'h_off_elo', 'h_def_elo',
                          'h_pef_elo', 'a_off_elo', 'a_def_elo', 'a_pef_elo', 'home_pos', 'home_gd', 'home_pts',
