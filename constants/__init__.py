@@ -13,6 +13,8 @@ VERBOSE = int(os.environ['VERBOSE'])
 
 DATA_PROVIDER_URL = os.environ['DATA_PROVIDER_URL']
 
+LOCAL_TRAINING_DATA = '/Users/hadebisi/Documents/PersonalWorkspace/Data/europe_training_data.json'
+
 TRAINING_DATA_COLUMNS = ['home_team', 'away_team', 'home_goal', 'away_goal', 'outcome', 'h_off_elo', 'h_def_elo',
                          'h_pef_elo', 'a_off_elo', 'a_def_elo', 'a_pef_elo', 'home_pos', 'home_gd', 'home_pts',
                          'away_pos', 'away_gd', 'away_pts', 'h_form', 'h_winning', 'h_unbeaten', 'h_home', 'h_away',

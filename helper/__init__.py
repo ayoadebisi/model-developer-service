@@ -4,7 +4,7 @@ import pandas as pd
 from pandas import DataFrame
 from matplotlib import pyplot
 
-from constants import TRAINING_DATA_COLUMNS, STAGE
+from constants import TRAINING_DATA_COLUMNS, STAGE, LOCAL_TRAINING_DATA
 from data.s3_client_builder import S3_CLIENT
 from training.classification import train_league_classification
 from training.regression import train_league_regression
@@ -22,7 +22,7 @@ def obtain_training_data():
             )['Body'].read()
             training_data = json.loads(s3_response)
         else:
-            f = open('constants/europe_training_data.json')
+            f = open(LOCAL_TRAINING_DATA)
             training_data = json.load(f)
 
         frames = []
