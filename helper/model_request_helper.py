@@ -1,38 +1,79 @@
+import numpy as np
+
+from pandas import DataFrame
 from numpy import reshape, float64
 
-from constants import CLASSIFICATION_INPUT_SHAPE, REGRESSION_INPUT_SHAPE, TEAM_MAPPING, BETTING_ODDS, DEFAULT_ODDS
-from helper.feature_calculator import get_elo_feature, get_standings_feature, get_form_feature
+from helper import DATA_MEAN, DATA_STD
+from constants import NORMALIZATION_KEYS
 
 
-def get_betting_info(league_info):
-    home_team = TEAM_MAPPING.get(league_info['home_team'], league_info['home_team'])
-    away_team = TEAM_MAPPING.get(league_info['away_team'], league_info['away_team'])
-    query = home_team.lower().replace(' ', '-') + '-v-' + away_team.lower().replace(' ', '-')
-    betting_info = BETTING_ODDS[league_info['country'].lower()]['data'].get(query)
-    return DEFAULT_ODDS if betting_info is None else betting_info
+def normalize_data(data, key):
+    return (data - DATA_MEAN['data'][NORMALIZATION_KEYS[key]]) / DATA_STD['data'][NORMALIZATION_KEYS[key]]
 
 
-def build_classification_request(league_info, betting_info):
-    classification_request = [get_elo_feature(league_info, 'offensive'), get_elo_feature(league_info, 'defensive'),
-                              get_elo_feature(league_info, 'performance'),
-                              get_standings_feature(league_info, 'pos'), get_form_feature(league_info, 'form'),
-                              get_form_feature(league_info, 'winning'), get_form_feature(league_info, 'unbeaten'),
-                              get_form_feature(league_info, 'home'), get_form_feature(league_info, 'away'),
-                              betting_info['home'], betting_info['away'], betting_info['draw'],
-                              betting_info['handicap']]
+def build_classification_request(request_data):
+    classification_request = [normalize_data(request_data['Position'], 'Position'),
+                              normalize_data(request_data['PerformanceElo'], 'PerformanceElo'),
+                              normalize_data(request_data['HeadToHeadForm'], 'HeadToHeadForm'),
+                              normalize_data(request_data['UnbeatenStreak'], 'UnbeatenStreak'),
+                              normalize_data(request_data['Form'], 'Form'),
+                              normalize_data(request_data['WinningStreak'], 'WinningStreak'),
+                              normalize_data(request_data['HeadToHeadUnbeaten'], 'HeadToHeadUnbeaten'),
+                              normalize_data(request_data['HeadToHeadWinning'], 'HeadToHeadWinning'),
+                              normalize_data(request_data['HeadToHeadWins'], 'HeadToHeadWins')]
 
-    return reshape(classification_request, (CLASSIFICATION_INPUT_SHAPE, 1)).T
-
-
-def build_regression_request(league_info, betting_info, probabilities):
-    regression_request = [get_standings_feature(league_info, 'gd'), get_form_feature(league_info, 'scoring'),
-                          get_form_feature(league_info, 'clean_sheet'), betting_info['over'],
-                          betting_info['under'], probabilities[0][1], probabilities[0][2], probabilities[0][0]]
-
-    return reshape(regression_request, (REGRESSION_INPUT_SHAPE, 1)).T
+    return reshape(classification_request, (len(classification_request), 1)).T
 
 
-def build_prediction_response(probabilities, goals):
+def build_regression_request(request_data, probabilities):
+    regression_request = [probabilities[0][1], probabilities[0][2], probabilities[0][0],
+                          normalize_data(request_data['HeadToHeadGoal'], 'HeadToHeadGoal'),
+                          normalize_data(request_data['HeadToHeadGoalAvg'], 'HeadToHeadGoalAvg'),
+                          normalize_data(request_data['HeadToHeadCS'], 'HeadToHeadCS'),
+                          normalize_data(request_data['CleanSheet'], 'CleanSheet')]
+
+    return reshape(regression_request, (len(regression_request), 1)).T
+
+
+def build_poisson_request(request_data, probabilities, home, multiplier):
+    poisson_request = [[request_data['OffensiveElo'] * multiplier, request_data['DefensiveElo'] * multiplier,
+                        request_data['PerformanceElo'] * multiplier, request_data['Position'] * multiplier,
+                        request_data['Form'] * multiplier,
+                        request_data['WinningStreak'] * multiplier, request_data['UnbeatenStreak'] * multiplier,
+                        request_data['HomeForm'] * multiplier,
+                        request_data['AwayForm'] * multiplier, request_data['HomeWin'], request_data['AwayWin'],
+                        request_data['Draw'], request_data['AsianHandicap'],
+                        request_data['GoalDifference'] * multiplier, request_data['ScoringStreak'] * multiplier,
+                        request_data['CleanSheet'] * multiplier, request_data['Over'],
+                        np.argmax(probabilities[0]), home]]
+
+    return DataFrame(poisson_request, columns=parse_formula_to_list())
+
+
+def parse_formula_to_list():
+    formula = "offense + defense + performance + position + form + winning_streak + unbeaten_streak + "\
+              "home_form + away_form + home_odds + away_odds + draw_odds + handicap + "\
+              "goal_difference + scoring_streak + clean_sheet_streak + over + winner + home"
+    return [x.strip() for x in formula.split("+")]
+
+
+def build_default_response():
+    return {
+        'forecast': {
+            'home_win': 0.33,
+            'away_win': 0.33,
+            'tie': 0.34
+        },
+        'score': {
+            'home': 0,
+            'expected_home': 0.0,
+            'away': 0,
+            'expected_away': 0.0
+        }
+    }
+
+
+def build_prediction_response(probabilities, home_goals, away_goals):
     return {
             'forecast': {
                 'home_win': round(float64(probabilities[0][1]), 3),
@@ -40,9 +81,9 @@ def build_prediction_response(probabilities, goals):
                 'tie': round(float64(probabilities[0][0]), 3)
             },
             'score': {
-                'home': int(round(float64(goals[0][0]), 0)),
-                'expected_home': round(float64(goals[0][0]), 2),
-                'away': int(round(float64(goals[0][1]), 0)),
-                'expected_away': round(float64(goals[0][1]), 2)
+                'home': int(round(float64(home_goals), 0)),
+                'expected_home': round(float64(home_goals), 2),
+                'away': int(round(float64(away_goals), 0)),
+                'expected_away': round(float64(away_goals), 2)
             }
         }
