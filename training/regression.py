@@ -1,12 +1,11 @@
 from pandas import DataFrame
-from sklearn.model_selection import train_test_split
-from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Dense, Dropout
-from tensorflow.keras.optimizers import Adam
+from sklearn.model_selection import train_test_split, RandomizedSearchCV
+from sklearn.pipeline import Pipeline
+from sklearn.linear_model import LinearRegression
 
 
-from constants import BEST_RATED_MODELS, TEST_SIZE, SHUFFLE, SEED, LEARNING_RATE, DECAY_RATE, \
-    EPOCHS, BATCH_SIZE, VERBOSE, ACTIVE_MODELS
+from constants import BEST_RATED_MODELS, TEST_SIZE, SHUFFLE, SEED, ACTIVE_MODELS
+from helper.model_builder_helper import print_performance
 from training import classification
 
 
@@ -29,36 +28,35 @@ def build_model(features, classification_features, labels):
     x_val, x_test, y_val, y_test = train_test_split(x_rem, y_rem, test_size=0.5,
                                                     shuffle=SHUFFLE, random_state=SEED)
 
-    model = Sequential()
-
-    model.add(Dense(units=x_train.shape[1], activation='softplus', input_dim=x_train.shape[1]))
-    model.add(Dropout(0.5))
-    model.add(Dense(units=75, activation='softplus'))
-    model.add(Dropout(0.5))
-    model.add(Dense(units=2, activation='softplus'))
-
-    optimizer = Adam(lr=LEARNING_RATE, decay=DECAY_RATE)
-
-    model.compile(loss='mean_squared_error',
-                  optimizer=optimizer,
-                  metrics=['accuracy'])
-
-    model.fit(x_train, y_train, validation_data=(x_val, y_val), epochs=EPOCHS, batch_size=BATCH_SIZE, verbose=VERBOSE)
-
-    results = model.evaluate(x_test, y_test, batch_size=BATCH_SIZE, verbose=VERBOSE)
-
-    update_best_model(model, results[1])
-
-    print('Regression model results for were:', results)
+    model = model_pipeline(x_train, y_train)
+    accuracy = print_performance(model, x_val, x_test, y_val, y_test, False)
+    update_best_model(model, accuracy)
 
     return model.predict(x_test)
 
 
+def model_pipeline(x, y):
+    model = Pipeline([
+        ('linearregression', LinearRegression(fit_intercept=True, normalize=True, positive=False))
+    ])
+    '''
+    distribution = {
+        'linearregression__fit_intercept': [True, False],
+        'linearregression__normalize': [True, False],
+        'linearregression__positive': [True, False]
+    }
+    model = RandomizedSearchCV(model, param_distributions=distribution)
+    print(f'Model best params={model.best_params_}')
+    '''
+    model.fit(x, y)
+    return model
+
+
 def process_features(features, classification_features):
     input_data = {
-        'home_win': classification_features[:, 1],
-        'away_win': classification_features[:, 2],
-        'tie': classification_features[:, 0],
+        'home_win': classification_features[:, 2],
+        'away_win': classification_features[:, 0],
+        'tie': classification_features[:, 1],
         'head_to_head_goal': features['head_to_head_goal'],
         'head_to_head_goal_avg': features['head_to_head_goal_avg'],
         'head_to_head_cs': features['head_to_head_cs'],
@@ -69,7 +67,7 @@ def process_features(features, classification_features):
 
 
 def get_classification_data(classification_features):
-    return ACTIVE_MODELS['classification'].predict(classification_features)
+    return ACTIVE_MODELS['classification'].predict_proba(classification_features)
 
 
 def update_best_model(model, accuracy):

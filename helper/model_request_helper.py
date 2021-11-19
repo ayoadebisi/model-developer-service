@@ -26,7 +26,7 @@ def build_classification_request(request_data):
 
 
 def build_regression_request(request_data, probabilities):
-    regression_request = [probabilities[0][1], probabilities[0][2], probabilities[0][0],
+    regression_request = [probabilities[0][2], probabilities[0][0], probabilities[0][1],
                           normalize_data(request_data['HeadToHeadGoal'], 'HeadToHeadGoal'),
                           normalize_data(request_data['HeadToHeadGoalAvg'], 'HeadToHeadGoalAvg'),
                           normalize_data(request_data['HeadToHeadCS'], 'HeadToHeadCS'),
@@ -76,14 +76,18 @@ def build_default_response():
 def build_prediction_response(probabilities, home_goals, away_goals):
     return {
             'forecast': {
-                'home_win': round(float64(probabilities[0][1]), 3),
-                'away_win': round(float64(probabilities[0][2]), 3),
-                'tie': round(float64(probabilities[0][0]), 3)
+                'home_win': round(probabilities[0][2], 3),
+                'away_win': round(probabilities[0][0], 3),
+                'tie': round(probabilities[0][1], 3)
             },
             'score': {
-                'home': int(round(float64(home_goals), 0)),
-                'expected_home': round(float64(home_goals), 2),
-                'away': int(round(float64(away_goals), 0)),
-                'expected_away': round(float64(away_goals), 2)
+                'home': int(round(negative_goal_check(float64(home_goals)), 0)),
+                'expected_home': round(negative_goal_check(float64(home_goals)), 2),
+                'away': int(round(negative_goal_check(float64(away_goals)), 0)),
+                'expected_away': round(negative_goal_check(float64(away_goals)), 2)
             }
         }
+
+
+def negative_goal_check(goal):
+    return 0 if goal < 0 else goal

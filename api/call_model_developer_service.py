@@ -39,7 +39,7 @@ class ModelDeveloperService(object):
 
             print('Sending classification inference request...')
             classification_request = build_classification_request(prediction_data)
-            probabilities = classification_model.predict(classification_request)
+            probabilities = classification_model.predict_proba(classification_request)
 
             print('Sending regression inference request...')
             regression_request = build_regression_request(prediction_data, probabilities)
