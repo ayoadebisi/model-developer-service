@@ -12,7 +12,7 @@ class ModelDeveloperService(object):
 
     def get_prediction(self):
         try:
-            league_info = request.json['predictionRequest']['league_info']
+            league_info = request.json['league_info']
 
             print(f'Handling Request={league_info}')
 
