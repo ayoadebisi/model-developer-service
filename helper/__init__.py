@@ -1,91 +1,104 @@
-import aiohttp
-import asyncio
 import json
+import pandas as pd
 
 from pandas import DataFrame
+from matplotlib import pyplot
 
-from constants import DATA_PROVIDER_URL, TRAINING_DATA_ENDPOINT, COUNTRIES, LEAGUE_MAP, RATING_TYPES, \
-    DATA_PROVIDER_ENDPOINT, SEASON, FORM_DATA_ENDPOINT, LEAGUE_STANDINGS, FORM_DATA, ELO_DATA
+from constants import TRAINING_DATA_COLUMNS, STAGE, LOCAL_TRAINING_DATA
+from data.s3_client_builder import S3_CLIENT
 from training.classification import train_league_classification
 from training.regression import train_league_regression
 
-loop = asyncio.get_event_loop()
+DATA_MEAN = {'data': pd.Series}
+DATA_STD = {'data': pd.Series}
 
 
-async def obtain_training_data():
-    league_data = []
+def obtain_training_data():
+    try:
+        if STAGE != 'DEVO':
+            s3_response = S3_CLIENT['client'].get_object(
+                Bucket='training-data-football-prediction',
+                Key='training-data'
+            )['Body'].read()
+            training_data = json.loads(s3_response)
+        else:
+            f = open(LOCAL_TRAINING_DATA)
+            training_data = json.load(f)
 
-    for country in COUNTRIES:
-        # url = DATA_PROVIDER_URL + TRAINING_DATA_ENDPOINT + LEAGUE_MAP[country.lower()]
-        # league_data.append(await send_request(url))
-        filename = 'constants/' + country + '_training_data.json'
-        with open(filename, 'r') as j:
-            league_data.append(json.loads(j.read()))
+        frames = []
 
-    for i in range(len(COUNTRIES)):
-        await train_league_classification(DataFrame(league_data[i]), COUNTRIES[i].lower())
-        await train_league_regression(DataFrame(league_data[i]), COUNTRIES[i].lower())
+        for i in range(len(training_data)):
+            frames.append(DataFrame(training_data[i]['training_data'], columns=TRAINING_DATA_COLUMNS))
 
+        training_df = pd.concat(frames)
 
-async def obtain_elo_data():
-    for country in COUNTRIES:
-        ratings = {}
-        for rating in RATING_TYPES:
-            # url = DATA_PROVIDER_URL + DATA_PROVIDER_ENDPOINT + 'rating?country=' + country.lower() +
-            # '&rating=' + rating
-            # elo_rating =  await send_request(url)
-            filename = 'constants/' + rating + '_elo.json'
-            with open(filename, 'r') as j:
-                elo_rating = json.loads(j.read())
-                normalize_elo(elo_rating)
-                ratings[rating] = elo_rating
-        ELO_DATA[country] = ratings
+        transformed_df = process_data(training_df)
 
+        global DATA_MEAN, DATA_STD
+        DATA_MEAN['data'] = transformed_df.mean()
+        DATA_STD['data'] = transformed_df.std()
 
-async def obtain_form_data():
-    for country in COUNTRIES:
-        # url = DATA_PROVIDER_URL + FORM_DATA_ENDPOINT + LEAGUE_MAP[country.lower()]
-        # form = await send_request(url)
-        filename = 'constants/' + country + '_form.json'
-        with open(filename, 'r') as j:
-            FORM_DATA[country] = json.loads(j.read())
+        normalized_data = standardized_data(transformed_df)
+        normalized_data[['home_goal', 'away_goal', 'outcome']] = training_df[['home_goal', 'away_goal', 'outcome']]
+        display_corr(normalized_data)
+
+        train_league_classification(normalized_data)
+        train_league_regression(normalized_data)
+    except Exception as e:
+        print(f'Exception occurred whilst training model {e}')
 
 
-async def obtain_standings_data():
-    for country in COUNTRIES:
-        # url = DATA_PROVIDER_URL + DATA_PROVIDER_ENDPOINT + 'standings?league=' + LEAGUE_MAP[country.lower()] \
-        #      + '&season=' + str(SEASON)
-        # standings = await send_request(url)
-        filename = 'constants/' + country + '_league.json'
-        with open(filename, 'r') as j:
-            standings = json.loads(j.read())
-            LEAGUE_STANDINGS[country] = {'data': standings}
+def display_hist(training_data):
+    training_data.hist(bins=30, figsize=(15, 10), grid=False)
+    pyplot.tight_layout()
+    pyplot.show()
 
 
-async def send_request(url):
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as resp:
-            return await resp.json()
+def standardized_data(training_data):
+    return (training_data - training_data.mean()) / training_data.std()
 
 
-def normalize_elo(elo):
-    min_elo = min_value(elo)
-    max_elo = max_value(elo)
-    delta = max_elo - min_elo
-
-    for key in elo:
-        elo[key]['elo'] = (elo[key]['elo'] - min_elo) / delta
-
-
-def min_value(elo):
-    min_list = []
-    for key in elo:
-        min_list.append(elo[key]['elo'])
-    return min(min_list)
+def display_corr(training_data):
+    home_corr = training_data.corr()['home_goal'].sort_values()
+    away_corr = training_data.corr()['away_goal'].sort_values()
+    outcome_corr = training_data.corr()['outcome'].sort_values()
+    print(f'Correlation for Home Goals: {home_corr}')
+    print(f'Correlation for Away Goals: {away_corr}')
+    print(f'Correlation for Outcome: {outcome_corr}')
 
 
-def max_value(elo):
-    max_list = []
-    for key in elo:
-        max_list.append(elo[key]['elo'])
-    return max(max_list)
+def process_data(dataframe):
+    data = {
+        'home_goal': dataframe['home_goal'],
+        'away_goal': dataframe['away_goal'],
+        'outcome': dataframe['outcome'],
+        'offense': dataframe['h_off_elo'] - dataframe['a_off_elo'],
+        'defense': dataframe['h_def_elo'] - dataframe['a_def_elo'],
+        'performance': dataframe['h_pef_elo'] - dataframe['a_pef_elo'],
+        'position': dataframe['home_pos'] - dataframe['away_pos'],
+        'goal_difference': dataframe['home_gd'] - dataframe['away_gd'],
+        'points': dataframe['home_pts'] - dataframe['away_pts'],
+        'form': dataframe['h_form'] - dataframe['a_form'],
+        'winning': dataframe['h_winning'] - dataframe['a_winning'],
+        'unbeaten': dataframe['h_unbeaten'] - dataframe['a_unbeaten'],
+        'home_form': dataframe['h_home'] - dataframe['a_home'],
+        'away_form': dataframe['h_away'] - dataframe['a_away'],
+        'clean_sheet': dataframe['h_clean_sheet'] - dataframe['a_clean_sheet'],
+        'scoring_streak': dataframe['h_scoring'] - dataframe['a_scoring'],
+        'head_to_head_cs': dataframe['head_to_head_clean_sheet_1'] - dataframe['head_to_head_clean_sheet_2'],
+        'head_to_head_form': dataframe['head_to_head_form_1'] - dataframe['head_to_head_form_2'],
+        'head_to_head_goal': dataframe['head_to_head_goal_1'] - dataframe['head_to_head_goal_2'],
+        'head_to_head_goal_avg': dataframe['head_to_head_goal_avg_1'] - dataframe['head_to_head_goal_avg_2'],
+        'head_to_head_scoring': dataframe['head_to_head_scoring_1'] - dataframe['head_to_head_scoring_2'],
+        'head_to_head_unbeaten': dataframe['head_to_head_unbeaten_1'] - dataframe['head_to_head_unbeaten_2'],
+        'head_to_head_winning': dataframe['head_to_head_winning_1'] - dataframe['head_to_head_winning_2'],
+        'head_to_head_wins': dataframe['head_to_head_wins_1'] - dataframe['head_to_head_wins_2'],
+        'home_odds': dataframe['home_odds'],
+        'draw_odds': dataframe['home_odds'],
+        'away_odds': dataframe['home_odds'],
+        'over': dataframe['home_odds'],
+        'under': dataframe['home_odds'],
+        'handicap': dataframe['handicap']
+    }
+
+    return DataFrame(data)

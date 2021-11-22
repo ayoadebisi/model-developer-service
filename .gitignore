@@ -130,3 +130,6 @@ dmypy.json
 
 # Pycharm Directories
 .idea/
+
+.DS_Store
+constants/europe_training_data.json
