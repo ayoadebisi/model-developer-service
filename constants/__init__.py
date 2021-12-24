@@ -35,6 +35,9 @@ NORMALIZED_COLUMNS = ['home_pos', 'away_pos', 'h_winning', 'h_unbeaten', 'h_home
 STANDARDIZED_COLUMNS = ['h_off_elo', 'h_def_elo', 'h_pef_elo', 'a_off_elo', 'a_def_elo', 'a_pef_elo', 'home_gd',
                         'home_pts', 'away_gd', 'away_pts', 'h_form', 'a_form', 'head_to_head_form_1']
 
+DROPPABLE_COLUMNS = ['home_goal', 'away_goal', 'outcome', 'home_odds', 'draw_odds', 'away_odds',
+                     'over', 'under', 'handicap']
+
 BEST_RATED_MODELS = {
     'classification': 0.0,
     'regression': 0.0

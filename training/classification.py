@@ -1,16 +1,15 @@
-from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import train_test_split, RandomizedSearchCV
+from sklearn.model_selection import train_test_split
 from sklearn.linear_model import SGDClassifier
-from scipy.stats import uniform
+from sklearn.feature_selection import RFE
 
 
-from constants import SEED, TEST_SIZE, SHUFFLE, BEST_RATED_MODELS, ACTIVE_MODELS
+from constants import SEED, TEST_SIZE, SHUFFLE, BEST_RATED_MODELS, ACTIVE_MODELS, DROPPABLE_COLUMNS
 from helper.model_builder_helper import print_performance
 
 
 def train_league_classification(data):
-    features = select_features(data)
+    features = data.drop(columns=DROPPABLE_COLUMNS)
     labels = data['outcome']
     build_model(features, labels)
 
@@ -29,25 +28,12 @@ def build_model(features, labels):
     update_best_model(model, accuracy)
 
 
-def select_features(dataframe):
-    return dataframe[['position', 'performance', 'head_to_head_form', 'unbeaten', 'form', 'winning',
-                      'head_to_head_unbeaten', 'head_to_head_winning', 'head_to_head_wins']]
-
-
 def model_pipeline(x, y):
-    model = Pipeline([
-        ('sgdclassifier', SGDClassifier(loss='log', alpha=0.038, l1_ratio=0.391, penalty='l1'))
-    ])
-    '''
-    distribution = {
-        'sgdclassifier__penalty': ['l2', 'l1', 'elasticnet'],
-        'sgdclassifier__alpha': uniform(0, 0.1),
-        'sgdclassifier__l1_ratio': uniform(0, 1)
-    }
-    model = RandomizedSearchCV(model, param_distributions=distribution)
-    print(f'Model best params={model.best_params_}')
-    '''
+    model = SGDClassifier(loss='log', alpha=0.038, l1_ratio=0.391, penalty='l1')
+    model = RFE(model, step=1, n_features_to_select=6)
     model.fit(x, y)
+    best_features = model.get_support()
+    print(f'Selected features for Classification: {x.columns[best_features]}')
     return model
 
 
