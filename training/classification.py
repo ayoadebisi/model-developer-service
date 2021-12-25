@@ -1,24 +1,30 @@
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import SGDClassifier
-from sklearn.feature_selection import RFE
 
 
 from constants import SEED, TEST_SIZE, SHUFFLE, BEST_RATED_MODELS, ACTIVE_MODELS, DROPPABLE_COLUMNS, NORMALIZATION_KEYS
 from helper.model_builder_helper import print_performance
 
-CLASSIFICATION_FEATURES = []
-REGRESSION_FEATURES = {}
-
 
 def train_league_classification(data):
-    features = data.drop(columns=DROPPABLE_COLUMNS)
+    features = data[get_classification_features()]
     labels = data['outcome']
     build_model(features, labels)
 
 
+def get_classification_features():
+    return ['offense', 'defense', 'performance', 'position', 'points', 'form', 'winning', 'unbeaten',
+            'head_to_head_form', 'head_to_head_unbeaten', 'head_to_head_winning', 'head_to_head_wins']
+
+
 def build_model(features, labels):
     training_label = LabelEncoder().fit(labels).transform(labels)
+    '''
+    0: Away Win
+    1: Tie
+    2: Home Win
+    '''
 
     x_train, x_rem, y_train, y_rem = train_test_split(features, training_label, test_size=TEST_SIZE,
                                                       shuffle=SHUFFLE, random_state=SEED)
@@ -33,29 +39,8 @@ def build_model(features, labels):
 
 def model_pipeline(x, y):
     model = SGDClassifier(loss='log', alpha=0.038, l1_ratio=0.391, penalty='l1')
-    model = RFE(model, step=1, n_features_to_select=6)
     model.fit(x, y)
-    best_features = model.get_support()
-    print(f'Selected features for Classification: {x.columns[best_features]}')
-    global CLASSIFICATION_FEATURES
-    CLASSIFICATION_FEATURES = x.columns[best_features]
-    set_regression_features()
     return model
-
-
-def get_classification_features():
-    return CLASSIFICATION_FEATURES
-
-
-def set_regression_features():
-    global REGRESSION_FEATURES
-    REGRESSION_FEATURES = {key for key in NORMALIZATION_KEYS
-                           if (NORMALIZATION_KEYS[key] not in CLASSIFICATION_FEATURES
-                               and key != 'HomeTeam' and key != 'AwayTeam')}
-
-
-def get_regression_features():
-    return REGRESSION_FEATURES
 
 
 def update_best_model(model, accuracy):

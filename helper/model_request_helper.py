@@ -5,7 +5,8 @@ from numpy import reshape, float64
 
 from helper import DATA_MEAN, DATA_STD
 from constants import NORMALIZATION_KEYS
-from training.classification import get_regression_features
+from training.classification import get_classification_features
+from training.regression import get_regression_features
 
 
 def normalize_data(data, key):
@@ -13,18 +14,23 @@ def normalize_data(data, key):
 
 
 def get_request_features(request_data, feature_keys):
-    return [normalize_data(request_data[key], key) for key in feature_keys]
+    return [normalize_data(request_data[get_norm_key(key)], get_norm_key(key)) for key in feature_keys]
+
+
+def get_norm_key(search_value):
+    for feature, raw_feature in NORMALIZATION_KEYS.items():
+        if search_value == raw_feature:
+            return feature
 
 
 def build_classification_request(request_data):
-    classification_request = get_request_features(request_data, NORMALIZATION_KEYS)
+    classification_request = get_request_features(request_data, get_classification_features())
     return reshape(classification_request, (len(classification_request), 1)).T
 
 
 def build_regression_request(request_data, probabilities):
-    probabilities_list = [probabilities[0][2], probabilities[0][0], probabilities[0][1]]
-    feature_keys = get_regression_features()
-    regression_request = get_request_features(request_data, feature_keys) + probabilities_list
+    probabilities_list = [probabilities[0][0], probabilities[0][1], probabilities[0][2]]
+    regression_request = get_request_features(request_data, get_regression_features()) + probabilities_list
     return reshape(regression_request, (len(regression_request), 1)).T
 
 
