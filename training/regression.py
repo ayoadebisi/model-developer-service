@@ -5,6 +5,7 @@ from sklearn.feature_selection import RFE
 
 from constants import BEST_RATED_MODELS, TEST_SIZE, SHUFFLE, SEED, ACTIVE_MODELS, DROPPABLE_COLUMNS
 from helper.model_builder_helper import print_performance
+from training.classification import get_classification_features
 
 
 def train_league_regression(data):
@@ -19,6 +20,7 @@ def train_league_regression(data):
 def build_model(features, labels):
     classification_outputs = get_classification_data(features)
     input_data = process_features(features, classification_outputs)
+    input_data = input_data.drop(columns=get_classification_features())
 
     x_train, x_rem, y_train, y_rem = train_test_split(input_data, labels, test_size=TEST_SIZE,
                                                       shuffle=SHUFFLE, random_state=SEED)

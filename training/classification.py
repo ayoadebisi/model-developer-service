@@ -4,8 +4,11 @@ from sklearn.linear_model import SGDClassifier
 from sklearn.feature_selection import RFE
 
 
-from constants import SEED, TEST_SIZE, SHUFFLE, BEST_RATED_MODELS, ACTIVE_MODELS, DROPPABLE_COLUMNS
+from constants import SEED, TEST_SIZE, SHUFFLE, BEST_RATED_MODELS, ACTIVE_MODELS, DROPPABLE_COLUMNS, NORMALIZATION_KEYS
 from helper.model_builder_helper import print_performance
+
+CLASSIFICATION_FEATURES = []
+REGRESSION_FEATURES = {}
 
 
 def train_league_classification(data):
@@ -34,7 +37,25 @@ def model_pipeline(x, y):
     model.fit(x, y)
     best_features = model.get_support()
     print(f'Selected features for Classification: {x.columns[best_features]}')
+    global CLASSIFICATION_FEATURES
+    CLASSIFICATION_FEATURES = x.columns[best_features]
+    set_regression_features()
     return model
+
+
+def get_classification_features():
+    return CLASSIFICATION_FEATURES
+
+
+def set_regression_features():
+    global REGRESSION_FEATURES
+    REGRESSION_FEATURES = {key for key in NORMALIZATION_KEYS
+                           if (NORMALIZATION_KEYS[key] not in CLASSIFICATION_FEATURES
+                               and key != 'HomeTeam' and key != 'AwayTeam')}
+
+
+def get_regression_features():
+    return REGRESSION_FEATURES
 
 
 def update_best_model(model, accuracy):

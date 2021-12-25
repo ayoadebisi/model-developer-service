@@ -5,45 +5,26 @@ from numpy import reshape, float64
 
 from helper import DATA_MEAN, DATA_STD
 from constants import NORMALIZATION_KEYS
+from training.classification import get_regression_features
 
 
 def normalize_data(data, key):
     return (data - DATA_MEAN['data'][NORMALIZATION_KEYS[key]]) / DATA_STD['data'][NORMALIZATION_KEYS[key]]
 
 
-def base_features(request_data):
-    return [normalize_data(request_data['OffensiveElo'], 'OffensiveElo'),
-            normalize_data(request_data['DefensiveElo'], 'DefensiveElo'),
-            normalize_data(request_data['PerformanceElo'], 'PerformanceElo'),
-            normalize_data(request_data['Position'], 'Position'),
-            normalize_data(request_data['GoalDifference'], 'GoalDifference'),
-            normalize_data(request_data['Points'], 'Points'),
-            normalize_data(request_data['Form'], 'Form'),
-            normalize_data(request_data['WinningStreak'], 'WinningStreak'),
-            normalize_data(request_data['UnbeatenStreak'], 'UnbeatenStreak'),
-            normalize_data(request_data['HomeForm'], 'HomeForm'),
-            normalize_data(request_data['AwayForm'], 'AwayForm'),
-            normalize_data(request_data['CleanSheet'], 'CleanSheet'),
-            normalize_data(request_data['ScoringStreak'], 'ScoringStreak'),
-            normalize_data(request_data['HeadToHeadCS'], 'HeadToHeadCS'),
-            normalize_data(request_data['HeadToHeadForm'], 'HeadToHeadForm'),
-            normalize_data(request_data['HeadToHeadGoal'], 'HeadToHeadGoal'),
-            normalize_data(request_data['HeadToHeadGoalAvg'], 'HeadToHeadGoalAvg'),
-            normalize_data(request_data['HeadToHeadScoring'], 'HeadToHeadScoring'),
-            normalize_data(request_data['HeadToHeadUnbeaten'], 'HeadToHeadUnbeaten'),
-            normalize_data(request_data['HeadToHeadWinning'], 'HeadToHeadWinning'),
-            normalize_data(request_data['HeadToHeadWins'], 'HeadToHeadWins')]
+def get_request_features(request_data, feature_keys):
+    return [normalize_data(request_data[key], key) for key in feature_keys]
 
 
 def build_classification_request(request_data):
-    classification_request = base_features(request_data)
+    classification_request = get_request_features(request_data, NORMALIZATION_KEYS)
     return reshape(classification_request, (len(classification_request), 1)).T
 
 
 def build_regression_request(request_data, probabilities):
     probabilities_list = [probabilities[0][2], probabilities[0][0], probabilities[0][1]]
-    regression_request = base_features(request_data) + probabilities_list
-
+    feature_keys = get_regression_features()
+    regression_request = get_request_features(request_data, feature_keys) + probabilities_list
     return reshape(regression_request, (len(regression_request), 1)).T
 
 

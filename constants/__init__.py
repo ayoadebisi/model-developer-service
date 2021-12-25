@@ -51,7 +51,6 @@ ACTIVE_MODELS = {
 
 NORMALIZATION_KEYS = {
     'PerformanceElo': 'performance',
-    'OffensiveRating': '',
     'WinningStreak': 'winning',
     'Form': 'form',
     'UnbeatenStreak': 'unbeaten',
@@ -63,10 +62,7 @@ NORMALIZATION_KEYS = {
     'ScoringStreak': 'scoring_streak',
     'HomeForm': 'home_form',
     'Position': 'position',
-    'DefensiveRating': '',
     'GoalDifference': 'goal_difference',
-    'PerformanceRating': '',
-    'AwayCleanSheet': '',
     'HeadToHeadGoal': 'head_to_head_goal',
     'HeadToHeadGoalAvg': 'head_to_head_goal_avg',
     'HeadToHeadCS': 'head_to_head_cs',
@@ -75,6 +71,4 @@ NORMALIZATION_KEYS = {
     'HeadToHeadUnbeaten': 'head_to_head_unbeaten',
     'HeadToHeadWinning': 'head_to_head_winning',
     'HeadToHeadWins': 'head_to_head_wins',
-    'HomeTeam': '',
-    'AwayTeam': ''
 }
