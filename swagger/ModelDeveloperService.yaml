@@ -23,23 +23,11 @@ paths:
               $ref: '#/definitions/PredictionRequest'
       responses:
         '200':
-          description: 'Data containing prediction for given matchup'
+          description: 'Data containing prediction for given match-up'
           schema:
             type: object
             items:
               $ref: '#/definitions/PredictionResponse'
-  /ModelDeveloperService/ratings:
-    get:
-      produces: [application/json]
-      summary: Gets best rating of trained ANN models for countries
-      operationId: api.call_model_developer_service.class_instance.get_ratings
-      responses:
-        '200':
-          description: 'Ratings for classification and regression model for each country'
-          schema:
-            type: object
-            items:
-              $ref: '#/definitions/ANNRatingsResponse'
 
 definitions:
   PredictionRequest:
@@ -85,26 +73,4 @@ definitions:
       predicted_home:
         type: number
       predicted_away:
-        type: number
-  ANNRatingsResponse:
-    type: object
-    properties:
-      classification:
-        type: object
-        $ref: '#/definitions/RatingsData'
-      regression:
-        type: object
-        $ref: '#/definitions/RatingsData'
-  RatingsData:
-    type: object
-    properties:
-      england:
-        type: number
-      france:
-        type: number
-      germany:
-        type: number
-      italy:
-        type: number
-      spain:
         type: number

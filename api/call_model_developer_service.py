@@ -1,11 +1,7 @@
-import requests
-import json
-
 from flask import request
 
-from constants import BEST_RATED_MODELS, ACTIVE_MODELS, DATA_PROVIDER_URL
-from helper.model_request_helper import build_classification_request, build_prediction_response, \
-    build_default_response, build_regression_request
+from constants import ACTIVE_MODELS
+from helper.model_request_helper import build_prediction_response, build_poisson_prediction, build_poisson_distribution
 
 
 class ModelDeveloperService(object):
@@ -21,39 +17,21 @@ class ModelDeveloperService(object):
                 'away_team': league_info['away_team']
             }
 
-            prediction_data = json.loads(requests.post(url=DATA_PROVIDER_URL, data=json.dumps(data)).text)
+            poisson_model = ACTIVE_MODELS['poisson']
 
-            print(f'Prediction Data={prediction_data}')
+            print('Sending poisson inference request...')
+            home_request, away_request = build_poisson_prediction(data)
+            home_goals = poisson_model.predict(home_request)
+            away_goals = poisson_model.predict(away_request)
+            pred_distribution = build_poisson_distribution(home_goals, away_goals, max_goals=5)
+            print(pred_distribution)
 
-            if not bool(prediction_data):
-                print('Prediction data is empty, returning default response.')
-                return build_default_response()
-
-            classification_model = ACTIVE_MODELS['classification']
-            regression_model = ACTIVE_MODELS['regression']
-
-            if not (classification_model or regression_model):
-                return {
-                    'message': 'Internal Error: Prediction model isn\'t ready. Try again later'
-                }, 500
-
-            print('Sending classification inference request...')
-            classification_request = build_classification_request(prediction_data)
-            probabilities = classification_model.predict_proba(classification_request)
-
-            print('Sending regression inference request...')
-            regression_request = build_regression_request(prediction_data, probabilities)
-            goals = regression_model.predict(regression_request)
-
-            return build_prediction_response(probabilities, goals[0][0], goals[0][1])
+            return build_prediction_response(home_goals.values[0], away_goals.values[0], pred_distribution)
         except Exception as e:
             print(f'Exception occurred whilst getting model prediction. {e}')
             return {
                 "Error Message": e
             }, 500
-
-    def get_ratings(self):
-        return BEST_RATED_MODELS
 
 
 class_instance = ModelDeveloperService()
