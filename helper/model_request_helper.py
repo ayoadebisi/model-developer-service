@@ -30,9 +30,11 @@ def build_prediction_response(home_goals, away_goals, probabilities):
                 'tie': round(tie, 3)
             },
             'score': {
-                'home': int(round(negative_goal_check(float64(score[0])), 0)),
+                'model_home': int(round(negative_goal_check(float64(home_goals)), 0)),
+                'model_away': int(round(negative_goal_check(float64(away_goals)), 0)),
+                'matrix_home': int(score[0]),
+                'matrix_away': int(score[1]),
                 'expected_home': round(negative_goal_check(float64(home_goals)), 2),
-                'away': int(round(negative_goal_check(float64(score[1])), 0)),
                 'expected_away': round(negative_goal_check(float64(away_goals)), 2)
             }
         }

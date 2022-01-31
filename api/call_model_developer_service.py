@@ -24,7 +24,6 @@ class ModelDeveloperService(object):
             home_goals = poisson_model.predict(home_request)
             away_goals = poisson_model.predict(away_request)
             pred_distribution = build_poisson_distribution(home_goals, away_goals, max_goals=5)
-            print(pred_distribution)
 
             return build_prediction_response(home_goals.values[0], away_goals.values[0], pred_distribution)
         except Exception as e:
